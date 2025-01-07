@@ -238,4 +238,4 @@ IPv4RouteType = Literal[
     "Route Cache Route",
     "CBF Leaked Route",
 ]
-Redistributed_Protocol = Literal["AttachedHost", "Bgp", "Connected", "Dynamic", "IS-IS", "OSPF Internal", "OSPFv3 Internal", "RIP", "Static", "User"]
+Redistributed_Protocol = Literal["AttachedHost", "Bgp", "Connected", "Dynamic", "IS-IS", "OSPF Internal", "OSPFv3 Internal", "RIP", "Static", "EOS SDK"]
