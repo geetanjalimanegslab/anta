@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2024 Arista Networks, Inc.
+# Copyright (c) 2023-2025 Arista Networks, Inc.
 # Use of this source code is governed by the Apache License 2.0
 # that can be found in the LICENSE file.
 """Test functions related to various STUN settings."""
@@ -91,14 +91,12 @@ class VerifyStunClientTranslation(AntaTest):
                 self.result.is_failure(f"{client_input} - Incorrect public-facing port - Expected: {input_public_port} Actual: {actual_public_port}")
 
 
-@deprecated_test_class(new_tests=["VerifyStunClientTranslation"])
+@deprecated_test_class(new_tests=["VerifyStunClientTranslation"], removal_in_version="v2.0.0")
 class VerifyStunClient(VerifyStunClientTranslation):
     """(Deprecated) Verifies the translation for a source address on a STUN client.
 
     Alias for the VerifyStunClientTranslation test to maintain backward compatibility.
     When initialized, it will emit a deprecation warning and call the VerifyStunClientTranslation test.
-
-    TODO: Remove this class in ANTA v2.0.0.
 
     Examples
     --------
@@ -112,6 +110,8 @@ class VerifyStunClient(VerifyStunClientTranslation):
               public_port: 6006
     ```
     """
+
+    # TODO: Remove this class in ANTA v2.0.0.
 
     # required to redefine name an description to overwrite parent class.
     name = "VerifyStunClient"
