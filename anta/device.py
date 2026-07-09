@@ -9,8 +9,9 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from collections import OrderedDict, defaultdict
+from dataclasses import dataclass
 from time import monotonic
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import asyncssh
 import httpcore
@@ -24,6 +25,7 @@ from anta.models import AntaCommand
 from anta.settings import get_httpx_settings
 from asynceapi._models import EAPIClientConnectionOptions
 from asynceapi._types import EapiComplexCommand
+from asynceapi.errors import EapiAuthenticationError
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -40,6 +42,17 @@ CLIENT_KEYS = asyncssh.public_key.load_default_keypairs()
 # Limit concurrency to 100 requests (HTTPX default) to avoid high-concurrency performance issues
 # See: https://github.com/encode/httpx/issues/3215
 MAX_CONCURRENT_REQUESTS = 100
+
+
+@dataclass(frozen=True, slots=True)
+class AntaDeviceCapabilities:
+    """Declares the optional features a device implementation supports.
+
+    Subclasses of AntaDevice set this as a ClassVar to advertise which
+    ANTA capabilities they implement. The base default is all-False.
+    """
+
+    supports_session_auth: bool = False
 
 
 class AntaCache:
@@ -130,7 +143,12 @@ class AntaDevice(ABC):
         For informational/logging purposes only. Can be used by the runner to verify that
         the total potential connections of a run do not exceed the system file descriptor limit.
         This does **not** affect the actual device configuration. None if not available.
+    capabilities : AntaDeviceCapabilities
+        Class-level declaration of which optional features this device type supports.
+        Subclasses override this to advertise their capabilities.
     """
+
+    capabilities: ClassVar[AntaDeviceCapabilities] = AntaDeviceCapabilities()
 
     def __init__(self, name: str, tags: set[str] | None = None, *, disable_cache: bool = False) -> None:
         """Initialize an AntaDevice.
@@ -348,6 +366,9 @@ class AsyncEOSDevice(AntaDevice):
         When True, commands are collected in privileged (enable) mode.
     """
 
+    capabilities = AntaDeviceCapabilities(supports_session_auth=True)
+    """Features supported by this device type."""
+
     _client: asynceapi.Device
     """
     The underlying HTTPX-based eAPI client. Created by `_create_client()`.
@@ -362,7 +383,7 @@ class AsyncEOSDevice(AntaDevice):
     SSH client connection options used to establish transient SSH connections in `copy()`.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913 # noqa: S107
         self,
         host: str,
         username: str,
@@ -378,6 +399,7 @@ class AsyncEOSDevice(AntaDevice):
         enable: bool = False,
         insecure: bool = False,
         disable_cache: bool = False,
+        use_session_auth: bool = False,
     ) -> None:
         """Instantiate an AsyncEOSDevice.
 
@@ -409,6 +431,8 @@ class AsyncEOSDevice(AntaDevice):
             Disable SSH Host Key validation.
         disable_cache
             Disable caching for all commands for this device.
+        use_session_auth
+            Use eAPI cookie-session authentication for this device.
         """
         if host is None:
             message = "'host' is required to create an AsyncEOSDevice"
@@ -427,7 +451,9 @@ class AsyncEOSDevice(AntaDevice):
             raise ValueError(message)
         self.enable = enable
         self._enable_password = enable_password
-        self._eapi_opts = EAPIClientConnectionOptions(host=host, username=username, password=password, port=port, proto=proto, timeout=timeout)
+        self._eapi_opts = EAPIClientConnectionOptions(
+            host=host, username=username, password=password, port=port, proto=proto, timeout=timeout, use_session_auth=use_session_auth
+        )
         self._client = self._create_client()
         ssh_params: dict[str, Any] = {}
         if insecure:
@@ -447,6 +473,7 @@ class AsyncEOSDevice(AntaDevice):
             proto=eapi_opts.proto,
             timeout=eapi_opts.timeout,
             trust_env=get_httpx_settings().trust_env,
+            use_session_auth=eapi_opts.use_session_auth,
         )
 
     def __rich_repr__(self) -> Iterator[tuple[str, Any]]:
@@ -509,6 +536,11 @@ class AsyncEOSDevice(AntaDevice):
         except AttributeError:
             return None
 
+    @property
+    def use_session_auth(self) -> bool:
+        """Whether eAPI cookie-session authentication is enabled for this device."""
+        return self._eapi_opts.use_session_auth
+
     async def _collect(self, command: AntaCommand, *, collection_id: str | None = None) -> None:
         """Collect device command output from EOS using asynceapi.
 
@@ -556,6 +588,10 @@ class AsyncEOSDevice(AntaDevice):
             except asynceapi.EapiCommandError as e:
                 # This block catches exceptions related to EOS issuing an error.
                 self._handle_eapi_command_error(command, e)
+            except EapiAuthenticationError as e:
+                # This block catches authentication errors (HTTP 401) from eAPI when session auth is enabled.
+                command.errors = [exc_to_str(e)]
+                logger.error("Authentication failed while sending a command to %s: %s", self.name, e)
             except TimeoutException as e:
                 # This block catches Timeout exceptions.
                 command.errors = [exc_to_str(e)]
@@ -572,15 +608,7 @@ class AsyncEOSDevice(AntaDevice):
             except (ConnectError, OSError) as e:
                 # This block catches OSError and socket issues related exceptions.
                 command.errors = [exc_to_str(e)]
-                # pylint: disable=no-member
-                if (isinstance(exc := e.__cause__, httpcore.ConnectError) and isinstance(os_error := exc.__context__, OSError)) or isinstance(
-                    os_error := e, OSError
-                ):
-                    if isinstance(os_error.__cause__, OSError):
-                        os_error = os_error.__cause__
-                    logger.error("A local OS error occurred while connecting to %s: %s.", self.name, os_error)
-                else:
-                    anta_log_exception(e, f"An error occurred while issuing an eAPI request to {self.name}", logger)
+                self._handle_connect_error(e)
             except HTTPError as e:
                 # This block catches most of the httpx Exceptions and logs a general message.
                 command.errors = [exc_to_str(e)]
@@ -616,6 +644,16 @@ class AsyncEOSDevice(AntaDevice):
         else:
             logger.error("Command '%s' on device %s failed: %s", command.command, self.name, error_message_str)
 
+    def _handle_connect_error(self, e: ConnectError | OSError) -> None:
+        """Handle and log a ConnectError or OSError raised during command collection."""
+        # pylint: disable=no-member
+        if (isinstance(exc := e.__cause__, httpcore.ConnectError) and isinstance(os_error := exc.__context__, OSError)) or isinstance(os_error := e, OSError):
+            if isinstance(os_error.__cause__, OSError):
+                os_error = os_error.__cause__
+            logger.error("A local OS error occurred while connecting to %s: %s.", self.name, os_error)
+        else:
+            anta_log_exception(e, f"An error occurred while issuing an eAPI request to {self.name}", logger)
+
     async def refresh(self) -> None:
         """Update attributes of an AsyncEOSDevice instance.
 
@@ -634,7 +672,7 @@ class AsyncEOSDevice(AntaDevice):
             self._client = self._create_client()
         try:
             self.is_online = await self._client.check_api_endpoint()
-        except HTTPError as e:
+        except (EapiAuthenticationError, HTTPError) as e:
             self.is_online = False
             self.established = False
             logger.warning("An error occurred while attempting to connect to device %s: %s", self.name, exc_to_str(e))

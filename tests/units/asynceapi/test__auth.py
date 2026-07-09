@@ -152,8 +152,8 @@ async def test_auth_flow_login_failure_raises(
     assert session_auth.session_cookie is None
 
 
-async def test_auth_flow_401_raises(session_auth: EapiSessionAuth) -> None:
-    """Test that a 401 on the command request raises EapiAuthenticationError."""
+async def test_auth_flow_401_clears_matching_cookie(session_auth: EapiSessionAuth) -> None:
+    """Test that a 401 on the command request clears the cookie when it matches the one used."""
     session_auth.session_cookie = _SESSION_COOKIE
 
     gen = session_auth.async_auth_flow(request=httpx.Request("POST", _COMMAND_URL))
@@ -161,3 +161,46 @@ async def test_auth_flow_401_raises(session_auth: EapiSessionAuth) -> None:
 
     with pytest.raises(EapiAuthenticationError):
         await gen.asend(httpx.Response(401, request=cmd_req))
+
+    assert session_auth.logged_in is False
+    assert session_auth.session_cookie is None
+
+
+async def test_auth_flow_401_preserves_new_cookie(session_auth: EapiSessionAuth) -> None:
+    """Test that a 401 does not clear a cookie that was replaced by a concurrent re-login."""
+    session_auth.session_cookie = _SESSION_COOKIE
+
+    gen = session_auth.async_auth_flow(request=httpx.Request("POST", _COMMAND_URL))
+    cmd_req = await anext(gen)
+
+    new_cookie = "freshcookie99887766"
+    session_auth.session_cookie = new_cookie
+
+    with pytest.raises(EapiAuthenticationError):
+        await gen.asend(httpx.Response(401, request=cmd_req))
+
+    assert session_auth.session_cookie == new_cookie
+
+
+async def test_auth_flow_login_401_includes_response_text(session_auth: EapiSessionAuth) -> None:
+    """Test that a 401 on login includes the response body in the exception."""
+    gen = session_auth.async_auth_flow(request=httpx.Request("POST", _COMMAND_URL))
+    login_req = await anext(gen)
+
+    with pytest.raises(EapiAuthenticationError) as exc_info:
+        await gen.asend(httpx.Response(401, text="Unauthorized", request=login_req))
+
+    assert exc_info.value.response_text == "Unauthorized"
+
+
+async def test_auth_flow_session_expired_includes_response_text(session_auth: EapiSessionAuth) -> None:
+    """Test that a 401 on the command request includes the response body in the exception."""
+    session_auth.session_cookie = _SESSION_COOKIE
+
+    gen = session_auth.async_auth_flow(request=httpx.Request("POST", _COMMAND_URL))
+    cmd_req = await anext(gen)
+
+    with pytest.raises(EapiAuthenticationError) as exc_info:
+        await gen.asend(httpx.Response(401, text="Session expired", request=cmd_req))
+
+    assert exc_info.value.response_text == "Session expired"

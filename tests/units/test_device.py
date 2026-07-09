@@ -18,10 +18,11 @@ from asyncssh import SSHClientConnection, SSHClientConnectionOptions
 from httpx import ConnectError, ConnectTimeout, HTTPError, TimeoutException
 from rich import print as rprint
 
-from anta.device import AntaDevice, AsyncEOSDevice
+from anta.device import AntaDevice, AntaDeviceCapabilities, AsyncEOSDevice
 from anta.models import AntaCommand
 from asynceapi import EapiCommandError
 from asynceapi._models import EAPIClientConnectionOptions
+from asynceapi.errors import EapiAuthenticationError
 from tests.units.conftest import COMMAND_OUTPUT
 
 if TYPE_CHECKING:
@@ -406,6 +407,21 @@ ASYNCEAPI_COLLECT_PARAMS: list[ParameterSet] = [
         {"output": None, "errors": ["TimeoutException: Test"]},
         id="httpx.TimeoutException",
     ),
+    pytest.param(
+        {},
+        {"command": "show version", "patch_kwargs": {"side_effect": EapiAuthenticationError("42.42.42.42")}},
+        {"output": None, "errors": ["EapiAuthenticationError: Authentication failed for '42.42.42.42' (HTTP 401)."]},
+        id="asynceapi.EapiAuthenticationError",
+    ),
+    pytest.param(
+        {},
+        {"command": "show version", "patch_kwargs": {"side_effect": EapiAuthenticationError("42.42.42.42", session_expired=True)}},
+        {
+            "output": None,
+            "errors": ["EapiAuthenticationError: Session cookie expired. Consider increasing 'session timeout' under 'management api http-commands' on the device."],
+        },
+        id="asynceapi.EapiAuthenticationError.session_expired",
+    ),
 ]
 ASYNCEAPI_COPY_PARAMS: list[ParameterSet] = [
     pytest.param({}, {"sources": [Path("/mnt/flash"), Path("/var/log/agents")], "destination": Path(), "direction": "from"}, id="from"),
@@ -452,7 +468,16 @@ REFRESH_PARAMS: list[ParameterSet] = [
             {},
         ),
         {"is_online": False, "established": False, "hw_model": None},
-        id="is not online",
+        id="is not online - HTTPError",
+    ),
+    pytest.param(
+        {},
+        (
+            {"side_effect": EapiAuthenticationError("42.42.42.42", response_text="Bad username/password combination")},
+            {},
+        ),
+        {"is_online": False, "established": False, "hw_model": None},
+        id="is not online - EapiAuthenticationError",
     ),
     pytest.param(
         {},
@@ -615,10 +640,19 @@ class TestAntaDevice:
         """Test max_connections property."""
         assert device.max_connections is None
 
+    def test_capabilities_default(self, device: AntaDevice) -> None:
+        """Verify the base AntaDevice capabilities default to all-False."""
+        assert device.capabilities == AntaDeviceCapabilities()
+        assert device.capabilities.supports_session_auth is False
+
 
 # pylint: disable=too-many-public-methods
 class TestAsyncEOSDevice:
     """Test for anta.device.AsyncEOSDevice."""
+
+    def test_capabilities(self) -> None:
+        """Verify AsyncEOSDevice advertises session auth support."""
+        assert AsyncEOSDevice.capabilities.supports_session_auth is True
 
     @pytest.mark.parametrize(("device", "expected", "expected_raise"), INIT_PARAMS)
     def test__init__(self, device: dict[str, Any], expected: dict[str, Any] | None, expected_raise: AbstractContextManager[Exception]) -> None:
@@ -787,6 +821,20 @@ class TestAsyncEOSDevice:
         assert async_device.established is False
         await async_device.disconnect()
         assert async_device._client.is_closed
+
+    async def test_disconnect_with_session_calls_logout(self) -> None:
+        """Test that disconnect() triggers logout() before aclose() when use_session_auth=True."""
+        device = AsyncEOSDevice(host="42.42.42.42", username="anta", password="anta", use_session_auth=True)
+        assert device._client._session_auth is not None
+
+        logout_mock = AsyncMock()
+        with patch.object(device._client, "logout", logout_mock):
+            await device.disconnect()
+
+        logout_mock.assert_awaited_once()
+        assert device._client.is_closed
+        assert device.is_online is False
+        assert device.established is False
 
     async def test_refresh_recreate(self, async_device: AsyncEOSDevice) -> None:
         """Test that refresh() recreates the httpx client when it has been closed."""

@@ -6,12 +6,15 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from http import HTTPStatus
 from typing import TYPE_CHECKING
 
 import httpx
 
 from .errors import EapiAsyncOnlyError, EapiAuthenticationError
+
+LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -58,15 +61,18 @@ class EapiSessionAuth(httpx.Auth):
         """Authenticate if needed, attach the session cookie, and dispatch the request."""
         # Login on first use with double-checked locking
         if not self.logged_in:
+            LOGGER.debug("No session cookie for %s, waiting for login...", self._host)
             async with self._lock:
                 if not self.logged_in:
+                    LOGGER.debug("Performing login for %s...", self._host)
                     # Send login request
                     login_request = httpx.Request("POST", self._login_url, json={"username": self._username, "password": self._password})
                     login_response = yield login_request
 
                     # Validate response
                     if login_response.status_code == HTTPStatus.UNAUTHORIZED:
-                        raise EapiAuthenticationError(self._host)  # bad credentials
+                        await login_response.aread()
+                        raise EapiAuthenticationError(self._host, response_text=login_response.text.strip())
                     login_response.raise_for_status()
 
                     # Extract session cookie
@@ -77,10 +83,17 @@ class EapiSessionAuth(httpx.Auth):
 
                     # Update state
                     self.session_cookie = cookie
+                    LOGGER.debug("Session authentication established for %s", self._host)
+                elif self.session_cookie:
+                    LOGGER.debug("Attempted to login for %s but another coroutine already established session authentication", self._host)
 
         # Attach session cookie and dispatch the real request
-        request.headers["Cookie"] = f"Session={self.session_cookie}"
+        used_cookie = self.session_cookie
+        request.headers["Cookie"] = f"Session={used_cookie}"
         response = yield request
 
         if response.status_code == HTTPStatus.UNAUTHORIZED:
-            raise EapiAuthenticationError(self._host)  # session expired
+            await response.aread()
+            if self.session_cookie == used_cookie:
+                self.session_cookie = None
+            raise EapiAuthenticationError(self._host, response_text=response.text.strip(), session_expired=True)
