@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../imgs/favicon.ico">
-      <meta name="generator" content="zensical-0.0.46">
+      <meta name="generator" content="zensical-0.0.47">
     
     
       
@@ -36,7 +36,7 @@
       
         
       
-      <link rel="stylesheet" href="../assets/stylesheets/modern/main.19d3147f.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.5e19f6ca.min.css">
       
         
           
@@ -2833,6 +2833,28 @@
   -->
 
 <p>A couple of things to check when hitting an issue with ANTA:</p>
+<textarea hidden class="mermaid-zoom-source" data-title="Troubleshooting ANTA">
+flowchart LR
+    A>Hitting an<br />issue with ANTA] --> B{Is my issue <br >listed in the FAQ?}
+    B -- Yes --> C{Does the FAQ solution<br />works for me?}
+    C -- Yes --> V(((Victory)))
+    B -->|No| E{Is my problem<br />mentioned in one<br />of the open issues?}
+    C -->|No| E
+    E -- Yes --> F{Has the issue been<br />fixed in a newer<br />release or in main?}
+    F -- Yes --> U[Upgrade]
+    E -- No ---> H((Follow the steps below<br />and open a GitHub issue))
+    U --> I{Did it fix<br /> your problem}
+    I -- Yes --> V
+    I -- No --> H
+    F -- No ----> G((Add a comment on the <br />issue indicating you<br >are hitting this and<br />describing your setup<br /> and adding your logs.))
+
+    click B "../faq" "FAQ"
+    click E "https://github.com/aristanetworks/anta/issues"
+    click H "https://github.com/aristanetworks/anta/issues"
+ style A stroke:#f00,stroke-width:2px
+
+</textarea>
+
 <pre class="mermaid"><code>flowchart LR
     A&gt;Hitting an&lt;br /&gt;issue with ANTA] --&gt; B{Is my issue &lt;br &gt;listed in the FAQ?}
     B -- Yes --&gt; C{Does the FAQ solution&lt;br /&gt;works for me?}
@@ -2841,7 +2863,7 @@
     C --&gt;|No| E
     E -- Yes --&gt; F{Has the issue been&lt;br /&gt;fixed in a newer&lt;br /&gt;release or in main?}
     F -- Yes --&gt; U[Upgrade]
-    E -- No ---&gt; H((Follow the steps below&lt;br /&gt;and open a Github issue))
+    E -- No ---&gt; H((Follow the steps below&lt;br /&gt;and open a GitHub issue))
     U --&gt; I{Did it fix&lt;br /&gt; your problem}
     I -- Yes --&gt; V
     I -- No --&gt; H
@@ -2850,9 +2872,10 @@
     click B "../faq" "FAQ"
     click E "https://github.com/aristanetworks/anta/issues"
     click H "https://github.com/aristanetworks/anta/issues"
- style A stroke:#f00,stroke-width:2px</code></pre>
+ style A stroke:#f00,stroke-width:2px
+</code></pre>
 <h3 id="capturing-logs">Capturing logs<a class="headerlink" href="#capturing-logs" title="Permanent link">&para;</a></h3>
-<p>To help document the issue in Github, it is important to capture some logs so the developers can understand what is affecting your system. No logs mean that the first question asked on the issue will probably be <em>&ldquo;Can you share some logs please?&rdquo;</em>.</p>
+<p>To help document the issue in GitHub, it is important to capture some logs so the developers can understand what is affecting your system. No logs mean that the first question asked on the issue will probably be <em>&ldquo;Can you share some logs please?&rdquo;</em>.</p>
 <p>ANTA provides very verbose logs when using the <code>DEBUG</code> level.  When using DEBUG log level with a log file, the DEBUG logging level is not sent to stdout, but only to the file.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -2877,7 +2900,7 @@ similarly, all the <code>nrfu</code> options MUST be set between the <code>nrfu<
 <p class="admonition-title">Warning</p>
 <p>Do not use this if you do not know why. This produces a lot of logs and can create confusion if you do not know what to look for.</p>
 </div>
-<p>The environment variable <code>ANTA_DEBUG=true</code> enable ANTA Debug Mode.</p>
+<p>The environment variable <code>ANTA_DEBUG=true</code> enables ANTA Debug Mode.</p>
 <p>This flag is used by various functions in ANTA: when set to true, the function will display or log more information. In particular, when an Exception occurs in the code and this variable is set, the logging function used by ANTA is different to also produce the Python traceback for debugging. This typically needs to be done when opening a GitHub issue and an Exception is seen at runtime.</p>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code><span class="nv">ANTA_DEBUG</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>anta<span class="w"> </span>-l<span class="w"> </span>DEBUG<span class="w"> </span>--log-file<span class="w"> </span>anta.log<span class="w"> </span>nrfu<span class="w"> </span>--enable<span class="w"> </span>--username<span class="w"> </span>username<span class="w"> </span>--password<span class="w"> </span>arista<span class="w"> </span>--inventory<span class="w"> </span>inventory.yml<span class="w"> </span>-c<span class="w"> </span>nrfu.yml<span class="w"> </span>text
@@ -2924,7 +2947,7 @@ similarly, all the <code>nrfu</code> options MUST be set between the <code>nrfu<
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    June 26, 2026
+    July 15, 2026
   </span>
 
     
@@ -3029,11 +3052,13 @@ similarly, all the <code>nrfu</code> options MUST be set between the <code>nrfu<
       <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["navigation.instant","navigation.path","navigation.top","content.code.copy","toc.follow","navigation.indexes","content.tabs.link"],"search":"../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"default":["stable"],"provider":"mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.ee611ef6.min.js"></script>
+      <script src="../assets/javascripts/bundle.0df4f2d0.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+      
+        <script src="../stylesheets/mermaid-zoom.js"></script>
       
     
   </body>

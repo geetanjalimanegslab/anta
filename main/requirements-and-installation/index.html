@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../imgs/favicon.ico">
-      <meta name="generator" content="zensical-0.0.46">
+      <meta name="generator" content="zensical-0.0.47">
     
     
       
@@ -36,7 +36,7 @@
       
         
       
-      <link rel="stylesheet" href="../assets/stylesheets/modern/main.19d3147f.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.5e19f6ca.min.css">
       
         
           
@@ -441,7 +441,7 @@
 <li class="md-nav__item">
     <a href="#install-anta-from-github" class="md-nav__link">
       <span class="md-ellipsis">
-        Install ANTA from github
+        Install ANTA from GitHub
       </span>
     </a>
 
@@ -2888,7 +2888,7 @@
 <li class="md-nav__item">
     <a href="#install-anta-from-github" class="md-nav__link">
       <span class="md-ellipsis">
-        Install ANTA from github
+        Install ANTA from GitHub
       </span>
     </a>
 
@@ -2970,7 +2970,7 @@
 Python<span class="w"> </span><span class="m">3</span>.11.8
 </code></pre></div>
 <h3 id="install-anta-package">Install ANTA package<a class="headerlink" href="#install-anta-package" title="Permanent link">&para;</a></h3>
-<p>This installation will deploy tests collection, scripts and all their Python requirements.</p>
+<p>This installation will deploy the test collection, scripts, and all their Python requirements.</p>
 <p>The ANTA package and the cli require some packages that are not part of the Python standard library. They are indicated in the <a href="https://github.com/aristanetworks/anta/blob/main/pyproject.toml">pyproject.toml</a> file, under dependencies.</p>
 <h4 id="install-library-from-pypi-server">Install library from Pypi server<a class="headerlink" href="#install-library-from-pypi-server" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>anta
@@ -2980,7 +2980,7 @@ Python<span class="w"> </span><span class="m">3</span>.11.8
 <p>This command alone <strong>will not</strong> install the ANTA CLI requirements.</p>
 </div>
 <h4 id="install-anta-cli-as-an-application-with-pipx">Install ANTA CLI as an application with <code>pipx</code><a class="headerlink" href="#install-anta-cli-as-an-application-with-pipx" title="Permanent link">&para;</a></h4>
-<p><a href="https://pipx.pypa.io/stable/"><code>pipx</code></a> is a tool to install and run python applications in isolated environments. If you plan to use ANTA only as a CLI tool you can use <code>pipx</code> to install it. <code>pipx</code> installs ANTA in an isolated python environment and makes it available globally.</p>
+<p><a href="https://pipx.pypa.io/stable/"><code>pipx</code></a> is a tool to install and run Python applications in isolated environments. If you plan to use ANTA only as a CLI tool you can use <code>pipx</code> to install it. <code>pipx</code> installs ANTA in an isolated Python environment and makes it available globally.</p>
 <div class="highlight"><pre><span></span><code>pipx<span class="w"> </span>install<span class="w"> </span>anta<span class="o">[</span>cli<span class="o">]</span>
 </code></pre></div>
 <div class="admonition info">
@@ -2991,7 +2991,7 @@ Python<span class="w"> </span><span class="m">3</span>.11.8
 <p>Alternatively, pip install with <code>cli</code> extra is enough to install the ANTA CLI.</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>anta<span class="o">[</span>cli<span class="o">]</span>
 </code></pre></div>
-<h4 id="install-anta-from-github">Install ANTA from github<a class="headerlink" href="#install-anta-from-github" title="Permanent link">&para;</a></h4>
+<h4 id="install-anta-from-github">Install ANTA from GitHub<a class="headerlink" href="#install-anta-from-github" title="Permanent link">&para;</a></h4>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/aristanetworks/anta.git
 pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/aristanetworks/anta.git#egg<span class="o">=</span>anta<span class="o">[</span>cli<span class="o">]</span>
 
@@ -3021,7 +3021,7 @@ which<span class="w"> </span>anta
 </div>
 <div class="highlight"><pre><span></span><code><span class="c1"># Check ANTA version</span>
 anta<span class="w"> </span>--version
-anta,<span class="w"> </span>version<span class="w"> </span>v1.8.0
+anta,<span class="w"> </span>version<span class="w"> </span>v1.9.0
 </code></pre></div>
 <h3 id="eos-requirements">EOS Requirements<a class="headerlink" href="#eos-requirements" title="Permanent link">&para;</a></h3>
 <p>To get ANTA working, the targeted Arista EOS devices must have eAPI enabled. They need to use the following configuration (assuming you connect to the device using Management interface in MGMT VRF):</p>
@@ -3087,7 +3087,7 @@ show management api http-commands
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    June 26, 2026
+    July 16, 2026
   </span>
 
     
@@ -3192,11 +3192,13 @@ show management api http-commands
       <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["navigation.instant","navigation.path","navigation.top","content.code.copy","toc.follow","navigation.indexes","content.tabs.link"],"search":"../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"default":["stable"],"provider":"mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.ee611ef6.min.js"></script>
+      <script src="../assets/javascripts/bundle.0df4f2d0.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+      
+        <script src="../stylesheets/mermaid-zoom.js"></script>
       
     
   </body>
