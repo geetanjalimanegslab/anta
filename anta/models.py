@@ -477,22 +477,25 @@ class AntaTest(ABC):
 
         Any input validation error will set this test result status as 'error'.
         """
-
-        def _raise_invalid_input_type() -> None:
-            msg = f"Input should be a dict, Input instance or None, not {type(inputs).__name__}"
-            raise TypeError(msg)
-
-        try:
-            if inputs is None:
+        if inputs is None:
+            try:
                 self.inputs = self.Input()
-            elif isinstance(inputs, AntaTest.Input):
-                self.inputs = inputs
-            elif isinstance(inputs, dict):
+            except ValidationError as e:
+                message = f"{self.module}.{self.name}: Inputs are not valid\n{e}"
+                self.logger.error(message)
+                self.result.is_error(message=message)
+        elif isinstance(inputs, AntaTest.Input):
+            self.inputs = inputs
+        elif isinstance(inputs, dict):
+            try:
                 self.inputs = self.Input(**inputs)
-            else:
-                _raise_invalid_input_type()
-        except (ValidationError, TypeError) as e:
-            message = f"{self.module}.{self.name}: Inputs are not valid\n{e}"
+            except ValidationError as e:
+                message = f"{self.module}.{self.name}: Inputs are not valid\n{e}"
+                self.logger.error(message)
+                self.result.is_error(message=message)
+        else:
+            msg = f"Input should be a dict, Input instance or None, not {type(inputs).__name__}"
+            message = f"{self.module}.{self.name}: Inputs are not valid\n{msg}"
             self.logger.error(message)
             self.result.is_error(message=message)
 
