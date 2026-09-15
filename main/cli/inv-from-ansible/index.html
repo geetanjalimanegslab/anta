@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../imgs/favicon.ico">
-      <meta name="generator" content="zensical-0.0.57">
+      <meta name="generator" content="zensical-0.0.59">
     
     
       
@@ -612,9 +612,9 @@
       
         <!-- Courtesy of https://github.com/squidfunk/mkdocs-material/issues/4827#issuecomment-1869812019 -->
 <li class="md-nav__item">
-    <a href="#command-output" class="md-nav__link">
+    <a href="#example" class="md-nav__link">
       <span class="md-ellipsis">
-        Command output
+        Example
       </span>
     </a>
 
@@ -1952,6 +1952,8 @@
       
         
       
+        
+      
     
     
     
@@ -2023,6 +2025,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../security-advisory/reports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Report formats and results
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -2038,10 +2067,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_3" >
         
           
-          <label class="md-nav__link" for="__nav_8_2" id="__nav_8_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_8_3" id="__nav_8_3_label" tabindex="0">
             
   
   
@@ -2058,8 +2087,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2137,14 +2166,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../security-advisory/reports/" class="md-nav__link">
+      <a href="../../security-advisory/lab/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  Reports
+  Test in the lab
 
     
   </span>
@@ -3067,9 +3096,9 @@
       
         <!-- Courtesy of https://github.com/squidfunk/mkdocs-material/issues/4827#issuecomment-1869812019 -->
 <li class="md-nav__item">
-    <a href="#command-output" class="md-nav__link">
+    <a href="#example" class="md-nav__link">
       <span class="md-ellipsis">
-        Command output
+        Example
       </span>
     </a>
 
@@ -3172,7 +3201,7 @@
   
 
 
-  <h1 id="__skip">Create an Inventory from Ansible inventory</h1>
+  <h1 id="__skip">Inventory from Ansible</h1>
 
 <!--
   ~ Copyright (c) 2023-2026 Arista Networks, Inc.
@@ -3214,38 +3243,33 @@ Options:
 </li>
 </ul>
 </div>
-<p>By default, if user does not provide <code>--output</code> file, anta will save output to configured anta inventory (<code>anta --inventory</code>). If the output file has content, anta will ask user to overwrite when running in interactive console. This mechanism can be controlled by triggers in case of CI usage: <code>--overwrite</code> to force anta to overwrite file. If not set, anta will exit</p>
-<h3 id="command-output">Command output<a class="headerlink" href="#command-output" title="Permanent link">&para;</a></h3>
-<p><code>host</code> value is coming from the <code>ansible_host</code> key in your inventory while <code>name</code> is the name you defined for your host. Below is an ansible inventory example used to generate previous inventory:</p>
+<p>The output path is required, either through <code>--output</code> or <code>ANTA_INVENTORY</code>. If the destination file contains data, ANTA asks for confirmation in an interactive terminal. Use <code>--overwrite</code> for intentional, non-interactive replacement.</p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<p>The example uses the following Ansible inventory. Each <code>ansible_host</code> becomes the ANTA <code>host</code>, while the Ansible host key becomes its <code>name</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">all</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">children</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">endpoints</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">hosts</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">srv-pod01</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">ansible_httpapi_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9023</span>
-<span class="w">          </span><span class="nt">ansible_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9023</span>
-<span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.73.252.41</span>
-<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">endpoint</span>
+<span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.11</span>
 <span class="w">        </span><span class="nt">srv-pod02</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">ansible_httpapi_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9024</span>
-<span class="w">          </span><span class="nt">ansible_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9024</span>
-<span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.73.252.42</span>
-<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">endpoint</span>
+<span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.12</span>
 <span class="w">        </span><span class="nt">srv-pod03</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">ansible_httpapi_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9025</span>
-<span class="w">          </span><span class="nt">ansible_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9025</span>
-<span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.73.252.43</span>
-<span class="w">          </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">endpoint</span>
+<span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.13</span>
 </code></pre></div>
-<p>The output is an inventory where the name of the container is added as a tag for each host:</p>
+<p>Run the conversion against the <code>endpoints</code> group:</p>
+<div class="highlight"><pre><span></span><code>anta<span class="w"> </span>get<span class="w"> </span>from-ansible<span class="w"> </span>--ansible-inventory<span class="w"> </span>docs/snippets/ansible-inventory.yml<span class="w"> </span>--ansible-group<span class="w"> </span>endpoints<span class="w"> </span>--output<span class="w"> </span>anta-inventory.yml<span class="w"> </span>--overwrite
+</code></pre></div>
+<p><a class="glightbox" data-type="image" data-width="90vw" href="../../imgs/anta_get_fromansible_ansibleinventory_docs_snippets_ansibleinventoryyml_ansiblegroup_endpoints_output_antainventoryyml_overwrite.svg"><img alt="anta get from Ansible results" class="img_center" loading="lazy" src="../../imgs/anta_get_fromansible_ansibleinventory_docs_snippets_ansibleinventoryyml_ansiblegroup_endpoints_output_antainventoryyml_overwrite.svg" width="1600" /></a></p>
+<p>The generated <code>anta-inventory.yml</code> contains:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">anta_inventory</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.73.252.41</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.11</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srv-pod01</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.73.252.42</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.12</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srv-pod02</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.73.252.43</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.13</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srv-pod03</span>
 </code></pre></div>
 
@@ -3290,7 +3314,7 @@ Options:
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    July 15, 2026
+    September 11, 2026
   </span>
 
     
@@ -3395,7 +3419,7 @@ Options:
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["navigation.instant","navigation.path","navigation.top","content.code.copy","toc.follow","navigation.indexes","content.tabs.link"],"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":{"default":["stable"],"provider":"mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.49251538.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6970bfe9.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
       
